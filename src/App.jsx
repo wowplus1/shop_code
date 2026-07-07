@@ -174,27 +174,31 @@ export default function App() {
           setScannedProduct(apiProduct);
         } else {
           // 매칭 정보가 전혀 없는 경우
+          const country = getBarcodeCountry(barcode);
           setScannedProduct(productData || {
             barcode: barcode,
-            name: `온라인 미등록 바코드 (${barcode})`,
-            image: "",
-            lowPrice: 0,
+            name: `미등록 상품 (원산지: ${country})`,
+            image: "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=400",
+            lowPrice: 0, // 0원으로 셋업하여 가격 정보 없음 표시 유도
             shippingFee: 0,
-            mallName: "미등록",
-            link: `https://search.shopping.naver.com/search/all?query=${barcode}`
+            mallName: "정보 없음",
+            link: `https://search.shopping.naver.com/search/all?query=${barcode}`,
+            isUnregistered: true
           });
         }
         setIsPriceOpen(true);
       } catch (err) {
         console.error("Scraping Fetch Error, falling back to mock: ", err);
+        const country = getBarcodeCountry(barcode);
         setScannedProduct(productData || {
           barcode: barcode,
-          name: `임시 검색 바코드 (${barcode})`,
-          image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400",
-          lowPrice: 4500,
-          shippingFee: 3000,
-          mallName: "임시",
-          link: `https://search.shopping.naver.com/search/all?query=${barcode}`
+          name: `검색 실패 상품 (원산지: ${country})`,
+          image: "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=400",
+          lowPrice: 0,
+          shippingFee: 0,
+          mallName: "연동 오류",
+          link: `https://search.shopping.naver.com/search/all?query=${barcode}`,
+          isUnregistered: true
         });
         setIsPriceOpen(true);
       }
@@ -301,4 +305,28 @@ export default function App() {
       />
     </div>
   );
+}
+
+// 바코드 앞3자리를 기준으로 국가를 판별하는 헬퍼 함수
+function getBarcodeCountry(barcode) {
+  if (!barcode || barcode.length < 3) return "알 수 없음";
+  const prefix = barcode.substring(0, 3);
+  const prefixNum = parseInt(prefix);
+  
+  if (prefixNum === 880) return "대한민국";
+  if (prefixNum === 480) return "필리핀";
+  if ((prefixNum >= 450 && prefixNum <= 459) || (prefixNum >= 490 && prefixNum <= 499)) return "일본";
+  if (prefixNum >= 690 && prefixNum <= 699) return "중국";
+  if (prefixNum === 885) return "태국";
+  if (prefixNum >= 0 && prefixNum <= 19) return "미국/캐나다";
+  if (prefixNum >= 300 && prefixNum <= 379) return "프랑스";
+  if (prefixNum >= 400 && prefixNum <= 440) return "독일";
+  if (prefixNum >= 500 && prefixNum <= 509) return "영국";
+  if (prefixNum === 884) return "캄보디아";
+  if (prefixNum === 893) return "베트남";
+  if (prefixNum === 899) return "인도네시아";
+  if (prefixNum === 955) return "말레이시아";
+  if (prefixNum === 471) return "대만";
+  
+  return "해외 국가";
 }

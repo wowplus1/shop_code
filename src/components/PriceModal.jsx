@@ -60,16 +60,32 @@ export default function PriceModal({ isOpen, onClose, product }) {
             </h4>
             
             <div className="price-section">
-              <div className="mall-info">
-                {product.mallName || '온라인몰'} 최저가
-              </div>
-              <div className="price-main">
-                {Number(product.lowPrice).toLocaleString()}
-                <span className="price-currency">원</span>
-              </div>
-              <div className="shipping-fee">
-                {formatShippingFee(product.shippingFee)}
-              </div>
+              {product.isUnregistered ? (
+                <>
+                  <div className="mall-info" style={{ color: 'var(--accent-color)', fontWeight: '600' }}>
+                    바코드 정보 미등록
+                  </div>
+                  <div className="price-main" style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', fontWeight: '600', letterSpacing: '-0.02em' }}>
+                    최저가 정보 없음
+                  </div>
+                  <div className="shipping-fee" style={{ marginTop: '4px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    해외 제조품이거나 국내 온라인 쇼핑몰 미등록 바코드입니다.
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="mall-info">
+                    {product.mallName || '온라인몰'} 최저가
+                  </div>
+                  <div className="price-main">
+                    {Number(product.lowPrice).toLocaleString()}
+                    <span className="price-currency">원</span>
+                  </div>
+                  <div className="shipping-fee">
+                    {formatShippingFee(product.shippingFee)}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -81,7 +97,7 @@ export default function PriceModal({ isOpen, onClose, product }) {
           rel="noopener noreferrer" 
           className="action-btn"
         >
-          <span>온라인 최저가 보러가기</span>
+          <span>{product.isUnregistered ? "네이버 쇼핑에서 수동 검색하기" : "온라인 최저가 보러가기"}</span>
           <ExternalLink size={16} />
         </a>
       </div>
