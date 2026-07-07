@@ -15,66 +15,69 @@ export default function BarcodeScanner({ onScan, isPaused }) {
     scannerRef.current = html5Qrcode;
 
     const startScanner = async () => {
+      setCameraError(null);
+      
+      const scannerOptions = {
+        fps: 20,
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E
+        ],
+        qrbox: (width, height) => {
+          return { width: Math.min(width, 280), height: Math.min(height, 130) };
+        }
+      };
+
+      const handleSuccess = (decodedText, decodedResult) => {
+        if (!isPaused) {
+          onScan(decodedText);
+        }
+      };
+
+      const handleFailure = (errorMessage) => {
+        // 스캔 실패 로그 생략
+      };
+
       try {
-        setCameraError(null);
-        
-        // 고해상도(HD 이상) 설정으로 바코드 얇은 선의 뭉개짐 현상 방지
-        const videoConstraints = {
+        // 1차 시도: 고해상도 후면 카메라 획득 요구 (선명도 확보)
+        const highResConstraints = {
           facingMode: "environment",
-          width: { min: 640, ideal: 1280, max: 1920 },
-          height: { min: 480, ideal: 720, max: 1080 }
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         };
-
-        await html5Qrcode.start(
-          videoConstraints,
-          {
-            fps: 20,
-            // 명시적 1D 생필품 바코드 포맷 필터링
-            formatsToSupport: [
-              Html5QrcodeSupportedFormats.EAN_13,
-              Html5QrcodeSupportedFormats.EAN_8,
-              Html5QrcodeSupportedFormats.UPC_A,
-              Html5QrcodeSupportedFormats.UPC_E
-            ],
-            // 바코드 형태에 맞추어 가로로 긴 영역 분석
-            qrbox: (width, height) => {
-              return { width: Math.min(width, 280), height: Math.min(height, 130) };
-            }
-          },
-          (decodedText, decodedResult) => {
-            // 스캔 성공
-            if (!isPaused) {
-              onScan(decodedText);
-            }
-          },
-          (errorMessage) => {
-            // 스캔 실패 (스캔 중에 프레임 분석 실패 시 빈번하게 발생하므로 로그는 생략하거나 간략화)
-          }
-        );
-
-        // 플래시(Torch) 지원 여부 확인
-        setTimeout(() => {
-          try {
-            if (typeof html5Qrcode.getRunningTrackCameraCapabilities === 'function') {
-              const capabilities = html5Qrcode.getRunningTrackCameraCapabilities();
-              if (capabilities && typeof capabilities.hasTorch === 'function' && capabilities.hasTorch()) {
-                setHasTorch(true);
-              }
-            } else if (typeof html5Qrcode.getRunningTrackCapabilities === 'function') {
-              const capabilities = html5Qrcode.getRunningTrackCapabilities();
-              if (capabilities && capabilities.torch) {
-                setHasTorch(true);
-              }
-            }
-          } catch (e) {
-            console.log("Torch capability check failed", e);
-          }
-        }, 1000);
-
+        await html5Qrcode.start(highResConstraints, scannerOptions, handleSuccess, handleFailure);
       } catch (err) {
-        console.error("Camera start error: ", err);
-        setCameraError("카메라 접근 권한이 필요합니다. 브라우저 설정을 확인해주세요.");
+        console.warn("High-res camera constraints failed, falling back to default environment camera:", err);
+        try {
+          // 2차 시도 (폴백): 해상도 조건 제거 후 기본 후면 카메라 시도
+          await html5Qrcode.start({ facingMode: "environment" }, scannerOptions, handleSuccess, handleFailure);
+        } catch (fallbackErr) {
+          console.error("Camera startup failed completely:", fallbackErr);
+          setCameraError("카메라 접근 권한이 필요합니다. 브라우저 설정을 확인해주세요.");
+          return; // 실패 시 이후 코드 생략
+        }
       }
+
+      // 플래시(Torch) 지원 여부 확인
+      setTimeout(() => {
+        try {
+          if (typeof html5Qrcode.getRunningTrackCameraCapabilities === 'function') {
+            const capabilities = html5Qrcode.getRunningTrackCameraCapabilities();
+            if (capabilities && typeof capabilities.hasTorch === 'function' && capabilities.hasTorch()) {
+              setHasTorch(true);
+            }
+          } else if (typeof html5Qrcode.getRunningTrackCapabilities === 'function') {
+            const capabilities = html5Qrcode.getRunningTrackCapabilities();
+            if (capabilities && capabilities.torch) {
+              setHasTorch(true);
+            }
+          }
+        } catch (e) {
+          console.log("Torch capability check failed", e);
+        }
+      }, 1000);
     };
 
     if (!isPaused) {
