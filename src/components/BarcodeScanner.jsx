@@ -80,13 +80,21 @@ export default function BarcodeScanner({ onScan, isPaused }) {
       }, 1000);
     };
 
+    let timerId = null;
+
     if (!isPaused) {
-      startScanner();
+      // React DOM 마운트가 완전히 완료된 후 라이브러리가 돔을 참조하도록 200ms 지연 시작
+      timerId = setTimeout(() => {
+        startScanner();
+      }, 200);
     }
 
     return () => {
-      // 컴포넌트 언마운트 시 클린업
-      if (html5Qrcode.isScanning) {
+      // 타이머 해제
+      if (timerId) clearTimeout(timerId);
+      
+      // 컴포넌트 언마운트 시 안전하게 정지 처리
+      if (html5Qrcode && html5Qrcode.isScanning) {
         html5Qrcode.stop().catch(err => console.error("Error stopping scanner", err));
       }
     };
