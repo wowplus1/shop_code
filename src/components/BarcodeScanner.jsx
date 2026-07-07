@@ -27,7 +27,8 @@ export default function BarcodeScanner({ onScan, isPaused, onOpenSearch }) {
           Html5QrcodeSupportedFormats.UPC_E
         ],
         qrbox: (width, height) => {
-          return { width: Math.min(width, 280), height: Math.min(height, 130) };
+          // 연산 범위를 가로 90%, 세로 60%로 대폭 늘려 바코드가 대충 스쳐도 다 잡히도록 수정
+          return { width: Math.floor(width * 0.9), height: Math.floor(height * 0.6) };
         },
         // 하드웨어 가속 네이티브 Barcode Detection API 강제 연동 (지원 기기에서 스캔 속도 10배 이상 향상)
         experimentalFeatures: {
@@ -62,10 +63,20 @@ export default function BarcodeScanner({ onScan, isPaused, onOpenSearch }) {
         // 후면 카메라 매칭 실패 시 첫 번째 카메라 선택
         const chosenCameraId = targetCamera ? targetCamera.id : devices[0].id;
 
-        // 3. 고유 장치 ID를 직접 파라미터로 넘겨 모바일 브라우저 제약 조건 충돌(OverconstrainedError) 원천 회피
+        // 3. 고유 장치 ID로 스캔 엔진 시작
+        // 연속 자동 초점(focusMode: "continuous") 속성을 디바이스 렌즈에 물리적으로 강제 결합
         await html5Qrcode.start(
           chosenCameraId, 
-          scannerOptions, 
+          {
+            ...scannerOptions,
+            videoConstraints: {
+              deviceId: { exact: chosenCameraId },
+              focusMode: "continuous",
+              exposureMode: "continuous",
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            }
+          }, 
           handleSuccess, 
           handleFailure
         );
