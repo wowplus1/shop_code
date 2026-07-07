@@ -44,6 +44,7 @@
 - **사용자 질문**: VS Code를 쓰지 않고 Antigravity 채팅창만 띄워둔 테스트 환경에서, 터널 서버를 켜기 위한 터미널 실행 방법을 문의
 - **사용자 장애 보고**: 폰의 Expo Go 앱에서 `Project is incompatible...` 에러와 함께 `The installed version of Expo Go is for SDK 54.0.0 / The project you opened uses SDK 51` 충돌이 뜨는 화면 이미지 캡처 제출
 - **사용자 장애 보고**: 버전 매칭 성공 직후, 폰 화면 상단에 `Unable to resolve module expo-status-bar...` 자바스크립트 누락 컴파일 오류가 뜨는 화면 이미지 제출
+- **사용자 장애 보고**: 폰 화면 상단에 `Unable to resolve module react/compiler-runtime from explore.tsx` 컴파일 오류가 뜨는 로그 보고 접수
 - **진행 상황**:
   1. 기획서 PDF 분석을 통해 요구사항 파악 (Html5-Qrcode 기반 바코드 인식, 네이버 쇼핑 API 연동 및 Mock 데이터 활용, 하프 모달 결과창, PB 상품 예외 처리 및 수동 검색 지원 등).
   2. Vite React 프로젝트 생성 준비 완료 및 계획 승인 완료.
@@ -126,3 +127,5 @@
   80. Metro 로컬 포트 방해를 유발하던 구버전 백그라운드 프로세스 잔존 세션 정리(kill) 완료.
   81. 8081 Metro 포트 로컬 개발 서버(`npx expo start --clear`) 최종 시동 성공 및 대기 상태 확인 완료.
   82. 모달에 누락된 보조 상태바 렌더링용 모듈 `"expo-status-bar"` 패키지를 폰에 즉각 주입하여 추가 설치 완료.
+  83. React Compiler 관련 가속 옵션(`reactCompiler: true`)이 활성화되어 React 18 개발 환경에서 존재하지 않는 `react/compiler-runtime`을 로드하려다 발생한 explore.tsx 컴파일 런타임 오류 분석 및 app.json 설정 비활성화 완료.
+  84. 오류를 유발하던 미사용 안내용 예비 페이지 `mobile/src/app/explore.tsx` 파일 삭제 완료 및 깃허브 푸시 반영 완료.
