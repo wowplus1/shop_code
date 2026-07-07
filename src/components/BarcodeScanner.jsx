@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Zap, ZapOff } from 'lucide-react';
 
-export default function BarcodeScanner({ onScan, isPaused }) {
+export default function BarcodeScanner({ onScan, isPaused, onOpenSearch }) {
   const scannerRef = useRef(null);
   const [hasTorch, setHasTorch] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
@@ -55,7 +55,7 @@ export default function BarcodeScanner({ onScan, isPaused }) {
           await html5Qrcode.start({ facingMode: "environment" }, scannerOptions, handleSuccess, handleFailure);
         } catch (fallbackErr) {
           console.error("Camera startup failed completely:", fallbackErr);
-          setCameraError("카메라 접근 권한이 필요합니다. 브라우저 설정을 확인해주세요.");
+          setCameraError("카메라 작동을 시작할 수 없습니다. 카메라 권한 승인 상태 혹은 브라우저 설정을 점검해 주세요.");
           return; // 실패 시 이후 코드 생략
         }
       }
@@ -135,14 +135,36 @@ export default function BarcodeScanner({ onScan, isPaused }) {
           transform: 'translate(-50%, -50%)',
           textAlign: 'center',
           padding: '24px',
-          width: '80%',
-          background: 'var(--bg-tertiary)',
-          borderRadius: '16px',
+          width: '85%',
+          background: 'var(--bg-secondary)',
+          borderRadius: '20px',
           border: '1px solid var(--glass-border)',
-          zIndex: 9
+          boxShadow: 'var(--shadow-premium)',
+          zIndex: 99
         }}>
-          <p style={{ color: 'var(--accent-color)', fontWeight: '600', marginBottom: '12px' }}>카메라 구동 실패</p>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{cameraError}</p>
+          <p style={{ color: 'var(--accent-color)', fontWeight: '700', marginBottom: '12px', fontSize: '1.1rem' }}>카메라 구동 실패</p>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: '1.4' }}>
+            {cameraError}
+          </p>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button 
+              className="btn-secondary" 
+              onClick={() => setCameraError(null)}
+              style={{ padding: '10px', fontSize: '0.85rem' }}
+            >
+              닫기
+            </button>
+            <button 
+              className="btn-primary" 
+              onClick={() => {
+                setCameraError(null);
+                onOpenSearch();
+              }}
+              style={{ padding: '10px', fontSize: '0.85rem' }}
+            >
+              수동 검색하기
+            </button>
+          </div>
         </div>
       )}
 

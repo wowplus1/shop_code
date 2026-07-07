@@ -200,6 +200,10 @@ export default function App() {
       <BarcodeScanner 
         onScan={handleScanSuccess} 
         isPaused={isScannerPaused} 
+        onOpenSearch={() => {
+          setIsScannerPaused(true);
+          setIsSearchOpen(true);
+        }}
       />
 
       {/* 하프 모달 최저가 결과 팝업 */}
