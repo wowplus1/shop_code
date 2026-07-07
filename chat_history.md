@@ -9,6 +9,8 @@
 - **사용자 장애 보고**: Blocked request. This host is not allowed 에러 발생 (Vite 호스트 보호 정책)
 - **사용자 장애 보고**: allowedHosts: 'all' 적용 후에도 차단 지속 현상
 - **사용자 요청**: 깃허브에 코드를 올려달라는 요구 및 레포지토리 주소(`https://github.com/wowplus1/shop_code`) 제공
+- **사용자 추가 요청**: 그래서 접속 주소가 뭐야
+- **사용자 장애 보고**: 404 에러 발생 (GitHub Pages 배포 미완료)
 - **진행 상황**:
   1. 기획서 PDF 분석을 통해 요구사항 파악 (Html5-Qrcode 기반 바코드 인식, 네이버 쇼핑 API 연동 및 Mock 데이터 활용, 하프 모달 결과창, PB 상품 예외 처리 및 수동 검색 지원 등).
   2. Vite React 프로젝트 생성 준비 완료 및 계획 승인 완료.
@@ -34,3 +36,5 @@
   22. allowedHosts의 공식 스펙이 `'all'`이 아닌 `true`임을 추가 파악하고, `vite.config.js` 파일에 `allowedHosts: true`로 올바르게 수정한 후 Vite 백그라운드 개발 서버를 재구동(port 5173)하여 모바일 접속 준비를 완전히 마침.
   23. 사용자의 요청에 따라 GitHub에 올리기 위해 로컬 Git 저장소 초기화, 로컬 유저 설정 등록, 그리고 첫 커밋(`init`)을 성공적으로 완료함.
   24. 사용자가 제공한 원격 저장소(`https://github.com/wowplus1/shop_code`)를 `origin`으로 등록하고, 기본 브랜치를 `main`으로 지정한 후 푸시(`git push -u origin main`)를 성공적으로 완료함.
+  25. GitHub Pages 자동 빌드 배포 설정을 위해 `vite.config.js`에 `base` 경로를 추가하고 GitHub Actions `.github/workflows/deploy.yml`을 작성하여 최종 푸시를 완료함.
+  26. 404 에러 원인을 분석하여 사용자의 깃허브 Pages 활성화 설정(Actions 기반 빌드) 및 빌드 시간 소요로 대기할 것을 가이드함.
