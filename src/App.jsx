@@ -24,6 +24,12 @@ export default function App() {
 
   // 컴포넌트 마운트 시 localStorage에서 설정 불러오기
   useEffect(() => {
+    // 최초 모바일 테스트 편의를 위해, 강제로 Mock 모드를 끄고 실시간 API 스크래핑 모드로 셋업 (1회 강제 리셋)
+    const currentMock = localStorage.getItem('use_mock_data');
+    if (currentMock === null || currentMock === 'true') {
+      localStorage.setItem('use_mock_data', 'false');
+    }
+
     const savedId = localStorage.getItem('naver_client_id') || '3GZMhpS_2U1c6HhGMeWk';
     const savedSecret = localStorage.getItem('naver_client_secret') || 'rv0kU8KUOX';
     // 로컬 스토리지에 use_mock_data가 특별히 'true'로 저장된 적이 없는 한 기본값은 false(API 모드)
@@ -86,13 +92,26 @@ export default function App() {
         if (jsonMatch) {
           try {
             const data = JSON.parse(jsonMatch[1]);
+            const catalogInfo = data.props?.pageProps?.initialState?.catalog?.info;
             const productsList = data.props?.pageProps?.initialState?.products?.list || [];
             
-            if (productsList.length > 0) {
+            if (catalogInfo) {
+              // 바코드 다이렉트 매칭 시 네이버가 즉시 노출하는 카탈로그 객체 우선 파싱
+              apiProduct = {
+                barcode: barcode,
+                name: (catalogInfo.productName || catalogInfo.productTitle || "").replace(/<[^>]*>?/g, ''),
+                image: catalogInfo.imageUrl || "",
+                lowPrice: parseInt(catalogInfo.lowPrice) || 0,
+                shippingFee: 0,
+                mallName: catalogInfo.mallName || "네이버쇼핑 최저가",
+                link: `https://search.shopping.naver.com/catalog/${catalogInfo.id}`
+              };
+            } else if (productsList.length > 0) {
+              // 카탈로그 형태가 아닌 일반 통합검색 상품 리스트 파싱
               const firstItem = productsList[0].item;
               apiProduct = {
                 barcode: barcode,
-                name: firstItem.productName || firstItem.productTitle || "",
+                name: (firstItem.productName || firstItem.productTitle || "").replace(/<[^>]*>?/g, ''),
                 image: firstItem.imageUrl,
                 lowPrice: parseInt(firstItem.lowPrice) || 0,
                 shippingFee: parseInt(firstItem.deliveryFee) || 0,
