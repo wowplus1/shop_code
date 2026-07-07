@@ -20,13 +20,16 @@ export default function BarcodeScanner({ onScan, isPaused }) {
         await html5Qrcode.start(
           { facingMode: "environment" },
           {
-            fps: 15,
-            // Custom CSS 오버레이를 사용하므로 라이브러리 내부 qrbox는 지정하지 않거나 
-            // 분석 범위 확정을 위해 화면 전체 크기에 맞추거나 작게 설정합니다.
-            // qrbox가 없으면 비디오 영역 전체를 분석합니다.
+            fps: 20,
+            // 바코드 형식 한정으로 인식률 대폭 향상
+            formatsToSupport: [
+              0, // Html5QrcodeSupportedFormats.EAN_13
+              1, // Html5QrcodeSupportedFormats.EAN_8
+              11, // Html5QrcodeSupportedFormats.UPC_A
+              12  // Html5QrcodeSupportedFormats.UPC_E
+            ],
             qrbox: (width, height) => {
-              // 280x260 박스 비율과 유사하게 프레임 중앙 픽셀 분석 범위 지정
-              return { width: Math.min(width, 280), height: Math.min(height, 200) };
+              return { width: Math.min(width, 300), height: Math.min(height, 180) };
             }
           },
           (decodedText, decodedResult) => {

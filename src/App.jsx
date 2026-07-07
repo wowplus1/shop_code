@@ -46,23 +46,28 @@ export default function App() {
     setIsScannerPaused(true); // 스캔 성공 시 추가 스캔 방지를 위해 즉시 스패너 일시정지
 
     // 1. Mock 데이터베이스에서 먼저 검색
-    const productData = findMockProduct(barcode);
+    let productData = findMockProduct(barcode);
 
-    if (!productData) {
-      // 바코드가 DB에 없는 경우 (PB 상품 또는 인식 에러) -> 수동 검색창 팝업 유도
-      alert("바코드 정보를 조회할 수 없습니다. 수동 상품명 검색으로 전환합니다.");
-      setIsSearchOpen(true);
-      return;
-    }
-
-    // 2. Mock 모드일 경우 바로 바인딩
+    // 2. Mock 모드일 경우 바로 바인딩 (Mock에 없는 바코드는 가상 데이터 자동 생성)
     if (settings.useMock) {
+      if (!productData) {
+        productData = {
+          barcode: barcode,
+          name: `바코드 상품 (번호: ${barcode})`,
+          image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400",
+          lowPrice: 5800,
+          shippingFee: 3000,
+          mallName: "시뮬레이터 몰",
+          link: `https://search.shopping.naver.com/search/all?query=${barcode}`
+        };
+      }
       setScannedProduct(productData);
       setIsPriceOpen(true);
     } else {
-      // API 모드일 경우: 해당 상품명을 기반으로 네이버 쇼핑에서 실시간 최저가 조회
+      // 3. API 모드일 경우: 해당 상품명 혹은 바코드 번호를 검색어로 실시간 네이버 최저가 조회
+      const queryStr = productData ? productData.name : barcode;
       try {
-        const url = `/api/naver/v1/search/shop.json?query=${encodeURIComponent(productData.name)}&display=1`;
+        const url = `/api/naver/v1/search/shop.json?query=${encodeURIComponent(queryStr)}&display=1`;
         const response = await fetch(url, {
           headers: {
             'X-Naver-Client-Id': settings.clientId,
@@ -88,19 +93,40 @@ export default function App() {
             link: item.link
           };
           
-          // 배송비 계산 시뮬레이션
           apiProduct.shippingFee = apiProduct.lowPrice < 30000 ? 3000 : 0;
-
           setScannedProduct(apiProduct);
         } else {
-          // 검색 결과가 없는 경우 Mock 데이터로 폴백
-          setScannedProduct(productData);
+          // 네이버에도 검색 결과가 없는 경우
+          if (productData) {
+            setScannedProduct(productData);
+          } else {
+            setScannedProduct({
+              barcode: barcode,
+              name: `온라인 미등록 바코드 (${barcode})`,
+              image: "",
+              lowPrice: 0,
+              shippingFee: 0,
+              mallName: "미등록",
+              link: `https://search.shopping.naver.com/search/all?query=${barcode}`
+            });
+          }
         }
         setIsPriceOpen(true);
       } catch (err) {
-        console.error("API Fetch Error, falling back to mock: ", err);
-        // API 호출 에러 시 Mock 데이터 제공
-        setScannedProduct(productData);
+        console.error("API Fetch Error, falling back: ", err);
+        if (productData) {
+          setScannedProduct(productData);
+        } else {
+          setScannedProduct({
+            barcode: barcode,
+            name: `임시 검색 바코드 (${barcode})`,
+            image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400",
+            lowPrice: 4500,
+            shippingFee: 3000,
+            mallName: "임시",
+            link: `https://search.shopping.naver.com/search/all?query=${barcode}`
+          });
+        }
         setIsPriceOpen(true);
       }
     }
