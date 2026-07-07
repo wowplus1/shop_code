@@ -41,22 +41,43 @@ export default function BarcodeScanner({ onScan, isPaused, onOpenSearch }) {
       };
 
       try {
-        // 1차 시도: 고해상도 후면 카메라 획득 요구 (선명도 확보)
-        const highResConstraints = {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        };
-        await html5Qrcode.start(highResConstraints, scannerOptions, handleSuccess, handleFailure);
+        // 1. 기기에 부착된 실제 카메라 장치 리스트 획득 (이 과정에서 브라우저가 카메라 승인 팝업을 정상 트리거함)
+        const devices = await Html5Qrcode.getCameras();
+        
+        if (!devices || devices.length === 0) {
+          throw new Error("기기에서 활성화된 카메라 장치를 찾을 수 없습니다.");
+        }
+
+        // 2. 후면 카메라 필터링 (rear, back, 후면, environment 등 검색)
+        let targetCamera = devices.find(device => {
+          const label = device.label.toLowerCase();
+          return label.includes('back') || label.includes('rear') || label.includes('후면') || label.includes('environment');
+        });
+
+        // 후면 카메라 매칭 실패 시 첫 번째 카메라 선택
+        const chosenCameraId = targetCamera ? targetCamera.id : devices[0].id;
+
+        // 3. 고유 장치 ID를 직접 파라미터로 넘겨 모바일 브라우저 제약 조건 충돌(OverconstrainedError) 원천 회피
+        await html5Qrcode.start(
+          chosenCameraId, 
+          scannerOptions, 
+          handleSuccess, 
+          handleFailure
+        );
       } catch (err) {
-        console.warn("High-res camera constraints failed, falling back to default environment camera:", err);
+        console.warn("Direct device ID scanner startup failed, trying facingMode fallback:", err);
         try {
-          // 2차 시도 (폴백): 해상도 조건 제거 후 기본 후면 카메라 시도
-          await html5Qrcode.start({ facingMode: "environment" }, scannerOptions, handleSuccess, handleFailure);
+          // 4. 최후 폴백: 장치 ID 획득에 오류가 있을 경우 facingMode 환경 힌트로 연동 시도
+          await html5Qrcode.start(
+            { facingMode: "environment" }, 
+            scannerOptions, 
+            handleSuccess, 
+            handleFailure
+          );
         } catch (fallbackErr) {
-          console.error("Camera startup failed completely:", fallbackErr);
-          setCameraError("카메라 작동을 시작할 수 없습니다. 카메라 권한 승인 상태 혹은 브라우저 설정을 점검해 주세요.");
-          return; // 실패 시 이후 코드 생략
+          console.error("All camera startup attempts failed:", fallbackErr);
+          setCameraError("카메라 장치를 시작할 수 없습니다. 1) Safari/Chrome 권한 설정에서 '카메라 허용' 상태인지 확인해 주시고, 2) 카카오톡 등 인앱 브라우저를 쓰고 계시다면 일반 브라우저(Safari/Chrome)로 다시 열어 주세요.");
+          return;
         }
       }
 
