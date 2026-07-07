@@ -25,12 +25,13 @@ export default function SearchFallback({ isOpen, onClose, onSelectProduct, setti
     } else {
       // 네이버 쇼핑 API 모드
       try {
-        const url = `/api/naver/v1/search/shop.json?query=${encodeURIComponent(query.trim())}&display=5`;
-        const response = await fetch(url, {
+        const targetUrl = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query.trim())}&display=5`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+        
+        const response = await fetch(proxyUrl, {
           headers: {
             'X-Naver-Client-Id': settings.clientId,
-            'X-Naver-Client-Secret': settings.clientSecret,
-            'Content-Type': 'application/json'
+            'X-Naver-Client-Secret': settings.clientSecret
           }
         });
 

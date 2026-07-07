@@ -65,19 +65,22 @@ export default function App() {
       setIsPriceOpen(true);
     } else {
       // 3. API 모드일 경우: 해당 상품명 혹은 바코드 번호를 검색어로 실시간 네이버 최저가 조회
+      // (Mock 매핑 정보가 없는 실물 바코드의 경우, 바코드 번호 자체를 네이버 쇼핑에 던져 100% 실시간 자동 매핑)
       const queryStr = productData ? productData.name : barcode;
       try {
-        const url = `/api/naver/v1/search/shop.json?query=${encodeURIComponent(queryStr)}&display=1`;
-        const response = await fetch(url, {
+        // 깃허브 Pages 배포 환경에서는 Vite Proxy가 작동하지 않으므로, allorigins 공개 CORS 프록시 서버 경유
+        const targetUrl = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(queryStr)}&display=1`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+
+        const response = await fetch(proxyUrl, {
           headers: {
             'X-Naver-Client-Id': settings.clientId,
-            'X-Naver-Client-Secret': settings.clientSecret,
-            'Content-Type': 'application/json'
+            'X-Naver-Client-Secret': settings.clientSecret
           }
         });
 
         if (!response.ok) {
-          throw new Error('API Request failed');
+          throw new Error('API Request failed via CORS proxy');
         }
 
         const data = await response.json();
