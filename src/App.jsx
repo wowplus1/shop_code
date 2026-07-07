@@ -17,16 +17,17 @@ export default function App() {
 
   // 시스템 설정 상태
   const [settings, setSettings] = useState({
-    useMock: true,
-    clientId: '',
-    clientSecret: ''
+    useMock: false, // 기본적으로 Mock 모드가 아닌 실시간 API 모드로 시작
+    clientId: '3GZMhpS_2U1c6HhGMeWk',
+    clientSecret: 'rv0kU8KUOX'
   });
 
   // 컴포넌트 마운트 시 localStorage에서 설정 불러오기
   useEffect(() => {
-    const savedId = localStorage.getItem('naver_client_id') || '';
-    const savedSecret = localStorage.getItem('naver_client_secret') || '';
-    const savedMode = localStorage.getItem('use_mock_data') !== 'false';
+    const savedId = localStorage.getItem('naver_client_id') || '3GZMhpS_2U1c6HhGMeWk';
+    const savedSecret = localStorage.getItem('naver_client_secret') || 'rv0kU8KUOX';
+    // 로컬 스토리지에 use_mock_data가 특별히 'true'로 저장된 적이 없는 한 기본값은 false(API 모드)
+    const savedMode = localStorage.getItem('use_mock_data') === 'true';
 
     setSettings({
       useMock: savedMode,

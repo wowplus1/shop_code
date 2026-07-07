@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Settings, X, Save } from 'lucide-react';
 
 export default function SettingsModal({ isOpen, onClose, onSaveSettings }) {
-  const [clientId, setClientId] = useState('');
-  const [clientSecret, setClientSecret] = useState('');
-  const [useMock, setUseMock] = useState(true);
+  const [clientId, setClientId] = useState('3GZMhpS_2U1c6HhGMeWk');
+  const [clientSecret, setClientSecret] = useState('rv0kU8KUOX');
+  const [useMock, setUseMock] = useState(false);
 
   useEffect(() => {
-    const savedId = localStorage.getItem('naver_client_id') || '';
-    const savedSecret = localStorage.getItem('naver_client_secret') || '';
-    const savedMode = localStorage.getItem('use_mock_data') !== 'false'; // default is true
+    const savedId = localStorage.getItem('naver_client_id') || '3GZMhpS_2U1c6HhGMeWk';
+    const savedSecret = localStorage.getItem('naver_client_secret') || 'rv0kU8KUOX';
+    const savedMode = localStorage.getItem('use_mock_data') === 'true'; // 기본 false
 
     setClientId(savedId);
     setClientSecret(savedSecret);
