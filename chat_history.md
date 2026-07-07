@@ -42,13 +42,14 @@
 - **사용자 요청**: 네이티브 모바일 앱 제작 프로젝트 전환 지시 ("이왕 이렇게 된거 앱으로 해보자")
 - **사용자 질문**: 아이폰과 안드로이드를 동시에 진행하는 하이브리드 앱 방식의 편의성에 대해 질문
 - **사용자 질문**: VS Code를 쓰지 않고 Antigravity 채팅창만 띄워둔 테스트 환경에서, 터널 서버를 켜기 위한 터미널 실행 방법을 문의
-- **사용자 장애 보고**: 폰의 Expo Go 앱에서 `Project is incompatible...` 에러와 함께 `The installed version of Expo Go is for SDK 54.0.0 / The project you opened uses SDK 51` 충돌이 뜨는 화면 이미지 캡처 제출
+- **사용자 장애 보고**: 폰 of Expo Go 앱에서 `Project is incompatible...` 에러와 함께 `The installed version of Expo Go is for SDK 54.0.0 / The project you opened uses SDK 51` 충돌이 뜨는 화면 이미지 캡처 제출
 - **사용자 장애 보고**: 버전 매칭 성공 직후, 폰 화면 상단에 `Unable to resolve module expo-status-bar...` 자바스크립트 누락 컴파일 오류가 뜨는 화면 이미지 제출
 - **사용자 장애 보고**: 폰 화면 상단에 `Unable to resolve module react/compiler-runtime from explore.tsx` 컴파일 오류가 뜨는 로그 보고 접수
 - **사용자 장애 보고**: 폰 화면 상단에 `Unable to resolve module react-native-svg from Icon.mjs` 컴파일 오류가 뜨는 로그 보고 접수
 - **사용자 장애 보고**: 폰 화면 상단에 `Unable to resolve module ../lib/SvgTouchableMixin from Shape.tsx` 경로 누락 에러 접수
 - **사용자 장애 피드백**: 다운패치 설치 완료 후에도 여전히 Metro 번들러 캐시 오동작으로 인한 react-native-svg 모듈 미발견 에러 보고
 - **사용자 장애 피드백**: 폰 화면 상단에 `TurboModuleRegistry.getEnforcing(...): PlatformConstants could not be found` 신규 아키텍처(Bridgeless Mode) 충돌 런타임 오류가 뜨는 화면 이미지 제출
+- **사용자 장애 보고**: SDK 54 일괄 승급 설치 완료 후, `Unable to resolve module expo-modules-core from getLinkingConfig.js` 타입스크립트 소스 경로 에러 보고 접수
 - **진행 상황**:
   1. 기획서 PDF 분석을 통해 요구사항 파악 (Html5-Qrcode 기반 바코드 인식, 네이버 쇼핑 API 연동 및 Mock 데이터 활용, 하프 모달 결과창, PB 상품 예외 처리 및 수동 검색 지원 등).
   2. Vite React 프로젝트 생성 준비 완료 및 계획 승인 완료.
@@ -93,7 +94,7 @@
   42. 카메라 권한 차단 등의 문제로 '카메라 구동 실패' 검은색 팝업이 화면을 완전히 가려, 사용자가 돋보기(수동 검색) 등의 다른 기능조차 조작하지 못하는 막다른 상태를 확인.
   43. `BarcodeScanner.jsx` 및 `App.jsx`를 대폭 보강하여 실패 팝업 내에 `[닫기]` 및 `[수동 검색하기]` 버튼을 추가 탑재. 에러 팝업을 수동으로 치울 수 있게 하고 즉시 수동 검색 모달로 전환할 수 있는 UX 탈출 경로를 구축하여 재배포 및 깃허브 최종 푸시 완료.
   44. "카메라 구동 실패"를 원천적으로 극복하기 위해 근본 원인을 재수정함. 물리 카메라의 고유 장치 ID(Device ID)를 직접 조회하고 후면 카메라 ID를 필터링하여 명시적으로 타겟팅해 실행하는 최고 단계의 카메라 시동 알고리즘으로 개편 및 깃허브 최종 재푸시 완료.
-  45. 카메라 구동은 정상 완료되었으나 1D 바코드 인식 성공률이 떨어지는 현상 디버깅.
+  45. CAMERA 구동은 정상 완료되었으나 1D 바코드 인식 성공률이 떨어지는 현상 디버깅.
   46. `BarcodeScanner.jsx`에 하드웨어 가속 판독 연동 설정을 탑재하여 디코딩 반응속도를 극대화하고 깃허브에 푸시 완료.
   47. 임시 시뮬레이션 상품명 대신, 실제 실물 바코드 번호에 매핑되는 실시간 상품 정보 및 최저가 정보를 온전히 획득하도록 API 연동 개편.
   48. 깃허브 Pages 운영 서버 환경에서 직접 Open API를 호출 시 유발되는 CORS 차단 정책을 해소하기 위해, allorigins 공개 CORS 프록시 서버 연동 모듈을 프론트엔드 API 호출 모듈(App.jsx, SearchFallback.jsx)에 심어 프록시 우회 처리를 전격 완료하고 깃허브에 최종 푸시함.
@@ -137,3 +138,4 @@
   86. react-native-svg 15.12.1 버전의 파일 경로 누락(SvgTouchableMixin) 충돌을 포착하여, React Native 0.74.5 스펙과 100% 호환되는 안정 15.2.0 버전으로 강제 하향 패치 및 깃허브 푸시 완료.
   87. Metro 번들러의 이전 캐시 상태를 완전 강제 리셋(`--clear`) 부팅 성공 및 react-native-svg@15.2.0 실시간 동기화 완료 확인.
   88. Bridgeless 아키텍처(New Architecture) 런타임 오류 해결을 위해 React Native 0.81.5 및 React 19.1.0 스펙으로 최종 승격 매칭 완료 및 포트 서버 갱신 성공.
+  89. getLinkingConfig 내 expo-modules-core 경로 매핑 유실 오류를 우회하기 위해, SDK 54 호환 완료된 expo-modules-core 최신 빌드 패키지 재주입 인스톨 완료 및 형상 관리 저장소 push 성공.
