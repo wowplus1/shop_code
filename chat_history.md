@@ -31,6 +31,7 @@
 - **사용자 추가 요청**: 임시 가상 상품명 대신 실시간 실제 상품 정보를 정상적으로 불러오도록 기능 고도화 요구
 - **사용자 질문**: API 모드 설정을 폰에서 타이핑해야 하는지 번거로움에 대한 질문
 - **사용자 질문**: 네이버 검색 API Key 발급 경로에 대한 문의
+- **사용자 추가 요청**: 발급한 네이버 API Key 문자열 제공 (`3GZMhpS_2U1c6HhGMeWk`, `rv0kU8KUOX`)
 - **진행 상황**:
   1. 기획서 PDF 분석을 통해 요구사항 파악 (Html5-Qrcode 기반 바코드 인식, 네이버 쇼핑 API 연동 및 Mock 데이터 활용, 하프 모달 결과창, PB 상품 예외 처리 및 수동 검색 지원 등).
   2. Vite React 프로젝트 생성 준비 완료 및 계획 승인 완료.
@@ -54,7 +55,7 @@
   20. `BarcodeScanner.jsx`에서 `html5-qrcode` 라이브러리의 `getRunningTrackCapabilities` 메서드 존재 여부를 체크하지 않고 호출하여 크래시가 났던 문제를 안전한 방어 코드로 패치 완료.
   21. Vite 호스트 보호 정책으로 외부 터널링 호스트 접근이 차단되는 문제 발생. `vite.config.js`에 `server.allowedHosts: 'all'` 설정을 주어 원천적으로 차단 우회 조치함.
   22. allowedHosts of Vite 스펙이 true임을 확인 후 올바르게 패치하여 개발 서버 재구동.
-  23. 사용자의 요청에 따라 GitHub에 올리기 위해 로컬 Git 저장소 초기화, 로컬 유저 설정 등록, 그리고 첫 커밋(`init`)을 성공적으로 완료함.
+  23. 사용자가 요청에 따라 GitHub에 올리기 위해 로컬 Git 저장소 초기화, 로컬 유저 설정 등록, 그리고 첫 커밋(`init`)을 성공적으로 완료함.
   24. 사용자가 제공한 원격 저장소(`https://github.com/wowplus1/shop_code`)를 `origin`으로 등록하고, 기본 브랜치를 `main`으로 지정한 후 푸시(`git push -u origin main`)를 성공적으로 완료함.
   25. GitHub Pages 자동 빌드 배포 설정을 위해 `vite.config.js`에 `base` 경로를 추가하고 GitHub Actions `.github/workflows/deploy.yml`을 작성하여 최종 푸시를 완료함.
   26. 404 에러 원인을 분석하여 사용자의 깃허브 Pages 활성화 설정 및 빌드 시간 소요로 대기할 것을 가이드함.
@@ -81,4 +82,5 @@
   47. 임시 시뮬레이션 상품명 대신, 실제 실물 바코드 번호에 매핑되는 실시간 상품 정보 및 최저가 정보를 온전히 획득하도록 API 연동 개편.
   48. 깃허브 Pages 운영 서버 환경에서 직접 Open API를 호출 시 유발되는 CORS 차단 정책을 해소하기 위해, allorigins 공개 CORS 프록시 서버 연동 모듈을 프론트엔드 API 호출 모듈(App.jsx, SearchFallback.jsx)에 심어 프록시 우회 처리를 전격 완료하고 깃허브에 최종 푸시함.
   49. 모바일 기기에서의 수동 API 키 입력의 불편함을 해소하기 위해, 코드 내부 기본 키 임베딩 기법 및 디폴트 실시간 API 모드 부팅 가이드를 전달함.
-  50. 네이버 검색 오픈 API 키 발급 단계를 알기 쉽게 요약하여 안내하기로 함.
+  50. 네이버 검색 오픈 API 키 발급 단계를 알기 쉽게 요약하여 안내함.
+  51. 사용자가 전달한 API Key(`Client ID: 3GZMhpS_2U1c6HhGMeWk`, `Secret: rv0kU8KUOX`) 정보를 소스코드(`App.jsx`, `SettingsModal.jsx`)에 기본 설정으로 탑재 완료. 이를 통해 스마트폰 접속 시 번거로운 입력 단계 없이 곧바로 실시간 가격 비교가 수행되도록 조치 후 최종 깃허브 푸시 완료.

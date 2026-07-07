@@ -22,38 +22,68 @@ export default function SearchFallback({ isOpen, onClose, onSelectProduct, setti
       );
       setResults(filtered);
       setLoading(false);
-    } else {
       // 네이버 쇼핑 API 모드
       try {
-        const targetUrl = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query.trim())}&display=5`;
+        const targetUrl = `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(query.trim())}`;
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
         
-        const response = await fetch(proxyUrl, {
-          headers: {
-            'X-Naver-Client-Id': settings.clientId,
-            'X-Naver-Client-Secret': settings.clientSecret
-          }
-        });
+        const response = await fetch(proxyUrl);
 
         if (!response.ok) {
-          throw new Error('Naver API request failed');
+          throw new Error('Naver HTML scrape request failed');
         }
 
-        const data = await response.json();
-        // 네이버 반환 형식을 앱 스펙에 맞게 파싱
-        const parsedResults = (data.items || []).map(item => ({
-          barcode: '',
-          name: item.title.replace(/<[^>]*>?/g, ''), // HTML 태그 제거
-          image: item.image,
-          lowPrice: parseInt(item.lprice) || 0,
-          shippingFee: parseInt(item.hprice) || 0, // 네이버 API에서 배송비는 간접 유추하거나 별도 계산, 기본 3000원 처리 혹은 없으면 0원
-          mallName: item.mallName,
-          link: item.link
-        }));
+        const html = await response.text();
+        let parsedResults = [];
 
-        // 임의의 배송비 매칭 (네이버 쇼핑 API는 lprice 필드 외 배송비 조회가 다소 부정확할 수 있으므로 기본값 설정)
+        // 1순위 파싱: NEXT_DATA JSON 파싱 시도
+        const jsonMatch = html.match(/<script id="__NEXT_DATA__" type="application/json">([\s\S]*?)<\/script>/);
+        if (jsonMatch) {
+          try {
+            const data = JSON.parse(jsonMatch[1]);
+            const productsList = data.props?.pageProps?.initialState?.products?.list || [];
+            parsedResults = productsList.slice(0, 5).map(prod => {
+              const item = prod.item;
+              return {
+                barcode: '',
+                name: (item.productName || item.productTitle || "").replace(/<[^>]*>?/g, ''),
+                image: item.imageUrl,
+                lowPrice: parseInt(item.lowPrice) || 0,
+                shippingFee: parseInt(item.deliveryFee) || 0,
+                mallName: item.mallName || "네이버쇼핑",
+                link: item.adcrUrl || `https://search.shopping.naver.com/catalog/${item.id}`
+              };
+            });
+          } catch (jsonErr) {
+            console.error("Search NEXT_DATA 파싱 에러:", jsonErr);
+          }
+        }
+
+        // 2순위 파싱: window.__PRELOADED_STATE__ 파싱 시도 (폴백)
+        if (parsedResults.length === 0) {
+          const preloadedMatch = html.match(/window\.__PRELOADED_STATE__\s*=\s*(\{[\s\S]*?\});\s*<\/script>/);
+          if (preloadedMatch) {
+            try {
+              const data = JSON.parse(preloadedMatch[1]);
+              const list = data.catalog?.products?.list || data.search?.products?.list || [];
+              parsedResults = list.slice(0, 5).map(item => ({
+                barcode: '',
+                name: (item.productName || item.productTitle || "").replace(/<[^>]*>?/g, ''),
+                image: item.imageUrl || item.thumbnail || "",
+                lowPrice: parseInt(item.lowPrice) || 0,
+                shippingFee: parseInt(item.deliveryFee) || 0,
+                mallName: item.mallName || "네이버쇼핑",
+                link: `https://search.shopping.naver.com/catalog/${item.id}`
+              }));
+            } catch (err) {
+              console.error("Search PRELOADED_STATE 파싱 에러:", err);
+            }
+          }
+        }
+
+        // 임의의 배송비 매칭 보완
         parsedResults.forEach(item => {
-          item.shippingFee = item.lowPrice < 30000 ? 3000 : 0; // 3만원 미만 시 배송비 3000원 부여 시뮬레이션
+          item.shippingFee = item.lowPrice < 30000 && item.shippingFee === 0 ? 3000 : item.shippingFee;
         });
 
         setResults(parsedResults);
