@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "마트 최저가 스캐너",
+    "slug": "mart-price-scanner",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "mart-price-scanner",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.wowplus1.pricescanner",
+      "infoPlist": {
+        "NSCameraUsageDescription": "바코드를 스캔하여 실시간 최저가 가격 비교를 하기 위해 카메라 접근 권한이 필요합니다."
+      }
+    },
+    "android": {
+      "package": "com.wowplus1.pricescanner",
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#121214",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "바코드를 스캔하여 온라인 최저가를 0.1초 만에 비교하기 위해 카메라가 구동됩니다."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#121214",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 120
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
