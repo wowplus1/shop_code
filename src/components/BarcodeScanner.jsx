@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Zap, ZapOff } from 'lucide-react';
 
 export default function BarcodeScanner({ onScan, isPaused }) {
@@ -17,19 +17,28 @@ export default function BarcodeScanner({ onScan, isPaused }) {
     const startScanner = async () => {
       try {
         setCameraError(null);
+        
+        // 고해상도(HD 이상) 설정으로 바코드 얇은 선의 뭉개짐 현상 방지
+        const videoConstraints = {
+          facingMode: "environment",
+          width: { min: 640, ideal: 1280, max: 1920 },
+          height: { min: 480, ideal: 720, max: 1080 }
+        };
+
         await html5Qrcode.start(
-          { facingMode: "environment" },
+          videoConstraints,
           {
             fps: 20,
-            // 바코드 형식 한정으로 인식률 대폭 향상
+            // 명시적 1D 생필품 바코드 포맷 필터링
             formatsToSupport: [
-              0, // Html5QrcodeSupportedFormats.EAN_13
-              1, // Html5QrcodeSupportedFormats.EAN_8
-              11, // Html5QrcodeSupportedFormats.UPC_A
-              12  // Html5QrcodeSupportedFormats.UPC_E
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E
             ],
+            // 바코드 형태에 맞추어 가로로 긴 영역 분석
             qrbox: (width, height) => {
-              return { width: Math.min(width, 300), height: Math.min(height, 180) };
+              return { width: Math.min(width, 280), height: Math.min(height, 130) };
             }
           },
           (decodedText, decodedResult) => {

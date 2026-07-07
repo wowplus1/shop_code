@@ -97,7 +97,7 @@ body {
 
 .overlay-middle {
   display: flex;
-  height: 260px;
+  height: 160px;
 }
 
 .overlay-left, .overlay-right {
@@ -109,7 +109,7 @@ body {
 /* 중앙 사각형 가이드 가로 고정 */
 .overlay-center {
   width: 280px;
-  height: 260px;
+  height: 160px;
   position: relative;
   box-shadow: 0 0 0 9999px rgba(10, 11, 13, 0.65);
 }
