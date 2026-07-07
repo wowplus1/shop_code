@@ -45,6 +45,7 @@
 - **사용자 장애 보고**: 폰의 Expo Go 앱에서 `Project is incompatible...` 에러와 함께 `The installed version of Expo Go is for SDK 54.0.0 / The project you opened uses SDK 51` 충돌이 뜨는 화면 이미지 캡처 제출
 - **사용자 장애 보고**: 버전 매칭 성공 직후, 폰 화면 상단에 `Unable to resolve module expo-status-bar...` 자바스크립트 누락 컴파일 오류가 뜨는 화면 이미지 제출
 - **사용자 장애 보고**: 폰 화면 상단에 `Unable to resolve module react/compiler-runtime from explore.tsx` 컴파일 오류가 뜨는 로그 보고 접수
+- **사용자 장애 보고**: 폰 화면 상단에 `Unable to resolve module react-native-svg from Icon.mjs` 컴파일 오류가 뜨는 로그 보고 접수
 - **진행 상황**:
   1. 기획서 PDF 분석을 통해 요구사항 파악 (Html5-Qrcode 기반 바코드 인식, 네이버 쇼핑 API 연동 및 Mock 데이터 활용, 하프 모달 결과창, PB 상품 예외 처리 및 수동 검색 지원 등).
   2. Vite React 프로젝트 생성 준비 완료 및 계획 승인 완료.
@@ -86,7 +87,7 @@
   39. `BarcodeScanner.jsx`를 보강하여 `reader` DOM을 조건부 렌더링하지 않고 항상 상주(display none/block 처리)하도록 안전 설계를 전격 도입하였으며, 깃허브에 푸시 완료.
   40. React 컴포넌트 마운트 수명 주기에서 DOM 요소(`<div id="reader">`)가 온전히 생성되기 직전에 `Html5Qrcode` 비동기 초기화 작업이 실행되어, `id="reader" 엘리먼트를 찾을 수 없어` 2단계 폴백까지 무조건 실패하고 '카메라구동실패' 오류를 강제 표출했던 돔 로딩 경쟁(Race Condition) 현상 발견.
   41. `BarcodeScanner.jsx`에 200ms `setTimeout` 지연 초기화 기법을 적용하여 React의 DOM 페인팅이 끝난 뒤 안전하게 카메라를 구동하도록 수정하고 깃허브에 최종 재푸시 완료.
-  42. 카메라 권한 차단 등의 문제로 '카메라 구동 실패' 검은색 팝업이 화면을 완전히 가려, 사용자가 돋보기(수동 검색) 등의 다른 기능조차 조작하지 못하는 막다른 상태를 확인.
+  42. 카메라 권한 차단 등의 문제로 '카메라 구동 실패' 검은색 팝업이 화면을 완전히 가려, 사용자가 돋보기(수동 검색) 등의 다른 기능조차 조작하지 못하는 막다운 상태를 확인.
   43. `BarcodeScanner.jsx` 및 `App.jsx`를 대폭 보강하여 실패 팝업 내에 `[닫기]` 및 `[수동 검색하기]` 버튼을 추가 탑재. 에러 팝업을 수동으로 치울 수 있게 하고 즉시 수동 검색 모달로 전환할 수 있는 UX 탈출 경로를 구축하여 재배포 및 깃허브 최종 푸시 완료.
   44. "카메라 구동 실패"를 원천적으로 극복하기 위해 근본 원인을 재수정함. 물리 카메라의 고유 장치 ID(Device ID)를 직접 조회하고 후면 카메라 ID를 필터링하여 명시적으로 타겟팅해 실행하는 최고 단계의 카메라 시동 알고리즘으로 개편 및 깃허브 최종 재푸시 완료.
   45. 카메라 구동은 정상 완료되었으나 1D 바코드 인식 성공률이 떨어지는 현상 디버깅.
@@ -129,3 +130,4 @@
   82. 모달에 누락된 보조 상태바 렌더링용 모듈 `"expo-status-bar"` 패키지를 폰에 즉각 주입하여 추가 설치 완료.
   83. React Compiler 관련 가속 옵션(`reactCompiler: true`)이 활성화되어 React 18 개발 환경에서 존재하지 않는 `react/compiler-runtime`을 로드하려다 발생한 explore.tsx 컴파일 런타임 오류 분석 및 app.json 설정 비활성화 완료.
   84. 오류를 유발하던 미사용 안내용 예비 페이지 `mobile/src/app/explore.tsx` 파일 삭제 완료 및 깃허브 푸시 반영 완료.
+  85. Lucide 벡터 아이콘 컴포넌트 렌더링 시 요구하는 필수 백그라운드 모듈인 `"react-native-svg"` 누락 오류 분석 및 패키지 추가 인스톨 완료 후 깃허브 동기화 푸시 완료.
