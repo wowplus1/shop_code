@@ -41,7 +41,7 @@ export default function SearchModal({ isOpen, onClose, onSelectProduct }) {
       let parsedResults = [];
 
       // 1순위 파싱: NEXT_DATA JSON
-      const jsonMatch = html.match(/<script id="__NEXT_DATA__" type="application/json">([\s\S]*?)<\/script>/);
+      const jsonMatch = html.match(new RegExp('<script id="__NEXT_DATA__" type="application/json">([\\s\\S]*?)</script>'));
       if (jsonMatch) {
         try {
           const data = JSON.parse(jsonMatch[1]);
@@ -65,7 +65,7 @@ export default function SearchModal({ isOpen, onClose, onSelectProduct }) {
 
       // 2순위 파싱: window.__PRELOADED_STATE__
       if (parsedResults.length === 0) {
-        const preloadedMatch = html.match(/window\.__PRELOADED_STATE__\s*=\s*(\{[\s\S]*?\});\s*<\/script>/);
+        const preloadedMatch = html.match(new RegExp('window\\.__PRELOADED_STATE__\\s*=\\s*(\\{[\\s\\S]*?\\});\\s*</script>'));
         if (preloadedMatch) {
           try {
             const data = JSON.parse(preloadedMatch[1]);

@@ -49,7 +49,7 @@ export default function HomeScreen() {
       let foundImage = "";
 
       // NEXT_DATA 파싱하여 상품명 추출 시도
-      const firstJsonMatch = firstHtml.match(/<script id="__NEXT_DATA__" type="application/json">([\s\S]*?)<\/script>/);
+      const firstJsonMatch = firstHtml.match(new RegExp('<script id="__NEXT_DATA__" type="application/json">([\\s\\S]*?)</script>'));
       if (firstJsonMatch) {
         try {
           const data = JSON.parse(firstJsonMatch[1]);
@@ -106,7 +106,7 @@ export default function HomeScreen() {
       const finalHtml = await finalResponse.text();
       let apiProduct = null;
 
-      const finalJsonMatch = finalHtml.match(/<script id="__NEXT_DATA__" type="application/json">([\s\S]*?)<\/script>/);
+      const finalJsonMatch = finalHtml.match(new RegExp('<script id="__NEXT_DATA__" type="application/json">([\\s\\S]*?)</script>'));
       if (finalJsonMatch) {
         try {
           const finalData = JSON.parse(finalJsonMatch[1]);
