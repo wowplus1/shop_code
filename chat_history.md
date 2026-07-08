@@ -42,7 +42,7 @@
 - **사용자 요청**: 네이티브 모바일 앱 제작 프로젝트 전환 지시 ("이왕 이렇게 된거 앱으로 해보자")
 - **사용자 질문**: 아이폰과 안드로이드를 동시에 진행하는 하이브리드 앱 방식의 편의성에 대해 질문
 - **사용자 질문**: VS Code를 쓰지 않고 Antigravity 채팅창만 띄워둔 테스트 환경에서, 터널 서버를 켜기 위한 터미널 실행 방법을 문의
-- **사용자 장애 보고**: 폰 of Expo Go 앱에서 `Project is incompatible...` 에러와 함께 `The installed version of Expo Go is for SDK 54.0.0 / The project you opened uses SDK 51` 충돌이 뜨는 화면 이미지 캡처 제출
+- **사용자 장애 보고**: 폰의 Expo Go 앱에서 `Project is incompatible...` 에러와 함께 `The installed version of Expo Go is for SDK 54.0.0 / The project you opened uses SDK 51` 충돌이 뜨는 화면 이미지 캡처 제출
 - **사용자 장애 보고**: 버전 매칭 성공 직후, 폰 화면 상단에 `Unable to resolve module expo-status-bar...` 자바스크립트 누락 컴파일 오류가 뜨는 화면 이미지 제출
 - **사용자 장애 보고**: 폰 화면 상단에 `Unable to resolve module react/compiler-runtime from explore.tsx` 컴파일 오류가 뜨는 로그 보고 접수
 - **사용자 장애 보고**: 폰 화면 상단에 `Unable to resolve module react-native-svg from Icon.mjs` 컴파일 오류가 뜨는 로그 보고 접수
@@ -50,6 +50,7 @@
 - **사용자 장애 피드백**: 다운패치 설치 완료 후에도 여전히 Metro 번들러 캐시 오동작으로 인한 react-native-svg 모듈 미발견 에러 보고
 - **사용자 장애 피드백**: 폰 화면 상단에 `TurboModuleRegistry.getEnforcing(...): PlatformConstants could not be found` 신규 아키텍처(Bridgeless Mode) 충돌 런타임 오류가 뜨는 화면 이미지 제출
 - **사용자 장애 보고**: SDK 54 일괄 승급 설치 완료 후, `Unable to resolve module expo-modules-core from getLinkingConfig.js` 타입스크립트 소스 경로 에러 보고 접수
+- **사용자 피드백**: 수정 배포 완료 후에도 모듈 해결 실패 에러가 그대로 동일하게 지속된다는 현상 접수
 - **진행 상황**:
   1. 기획서 PDF 분석을 통해 요구사항 파악 (Html5-Qrcode 기반 바코드 인식, 네이버 쇼핑 API 연동 및 Mock 데이터 활용, 하프 모달 결과창, PB 상품 예외 처리 및 수동 검색 지원 등).
   2. Vite React 프로젝트 생성 준비 완료 및 계획 승인 완료.
@@ -139,3 +140,4 @@
   87. Metro 번들러의 이전 캐시 상태를 완전 강제 리셋(`--clear`) 부팅 성공 및 react-native-svg@15.2.0 실시간 동기화 완료 확인.
   88. Bridgeless 아키텍처(New Architecture) 런타임 오류 해결을 위해 React Native 0.81.5 및 React 19.1.0 스펙으로 최종 승격 매칭 완료 및 포트 서버 갱신 성공.
   89. getLinkingConfig 내 expo-modules-core 경로 매핑 유실 오류를 우회하기 위해, SDK 54 호환 완료된 expo-modules-core 최신 빌드 패키지 재주입 인스톨 완료 및 형상 관리 저장소 push 성공.
+  90. expo-modules-core의 일부 배포판 깡통 오류 우회를 위해 빌드본이 완전히 갖춰진 고정 안전 2.0.0 버전으로 전격 교체 인스톨하고 깃허브 원격 푸시 및 메트로 캐시 포맷 리부팅 성공 확인.
