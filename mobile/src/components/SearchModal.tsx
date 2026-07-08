@@ -12,7 +12,6 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
-import { X, Search, ShoppingCart } from 'lucide-react-native';
 
 export default function SearchModal({ isOpen, onClose, onSelectProduct }) {
   const [query, setQuery] = useState('');
@@ -138,13 +137,13 @@ export default function SearchModal({ isOpen, onClose, onSelectProduct }) {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>수동 상품 검색</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <X size={20} color="#E1E1E6" />
+            <Text style={{ fontSize: 18, color: '#E1E1E6' }}>❌</Text>
           </TouchableOpacity>
         </View>
 
         {/* 검색 인풋 영역 */}
         <View style={styles.searchBar}>
-          <Search size={20} color="#8D8D99" style={styles.searchIcon} />
+          <Text style={{ fontSize: 18, color: '#8D8D99', marginRight: 8 }}>🔍</Text>
           <TextInput
             value={query}
             onChangeText={setQuery}
@@ -178,12 +177,12 @@ export default function SearchModal({ isOpen, onClose, onSelectProduct }) {
             />
           ) : searched ? (
             <View style={styles.centerContainer}>
-              <ShoppingCart size={48} color="#323238" />
+              <Text style={{ fontSize: 44, color: '#323238', marginBottom: 12 }}>🛒</Text>
               <Text style={styles.emptyText}>해당 키워드의 검색 결과가 없습니다.</Text>
             </View>
           ) : (
             <View style={styles.centerContainer}>
-              <Search size={48} color="#323238" />
+              <Text style={{ fontSize: 44, color: '#323238', marginBottom: 12 }}>🔍</Text>
               <Text style={styles.emptyText}>검색어를 입력하고 검색을 실행해 주세요.</Text>
             </View>
           )}

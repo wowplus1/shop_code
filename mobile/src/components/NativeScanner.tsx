@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Zap, ZapOff } from 'lucide-react-native';
 
 export default function NativeScanner({ onScan, isPaused }) {
   const [permission, requestPermission] = useCameraPermissions();
@@ -85,9 +84,9 @@ export default function NativeScanner({ onScan, isPaused }) {
               onPress={() => setTorchOn(!torchOn)}
             >
               {torchOn ? (
-                <Zap size={20} color="#FFF" />
+                <Text style={{ fontSize: 18, color: '#FFF' }}>⚡</Text>
               ) : (
-                <ZapOff size={20} color="rgba(255,255,255,0.6)" />
+                <Text style={{ fontSize: 18, color: 'rgba(255,255,255,0.6)' }}>💤</Text>
               )}
               <Text style={styles.torchBtnText}>
                 {torchOn ? '플래시 켜짐' : '플래시 끄기'}

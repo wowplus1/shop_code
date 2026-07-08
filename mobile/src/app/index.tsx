@@ -12,7 +12,6 @@ import {
   Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScanLine, Search, X, ExternalLink } from 'lucide-react-native';
 import NativeScanner from '../components/NativeScanner';
 import SearchModal from '../components/SearchModal';
 
@@ -220,7 +219,7 @@ export default function HomeScreen() {
         {/* 상단 툴바 영역 */}
         <View style={styles.header}>
           <View style={styles.titleGroup}>
-            <ScanLine size={22} color="#FF4A6B" />
+            <Text style={{ fontSize: 20, marginRight: 6 }}>📸</Text>
             <Text style={styles.headerTitle}>마트 최저가 스캐너</Text>
           </View>
           
@@ -231,7 +230,7 @@ export default function HomeScreen() {
               setIsSearchOpen(true);
             }}
           >
-            <Search size={22} color="#FFF" />
+            <Text style={{ fontSize: 20 }}>🔍</Text>
           </TouchableOpacity>
         </View>
 
@@ -281,7 +280,7 @@ export default function HomeScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalHeaderTitle}>최저가 비교 결과</Text>
               <TouchableOpacity onPress={handleCloseModal} style={styles.closeBtn}>
-                <X size={20} color="#E1E1E6" />
+                <Text style={{ fontSize: 18, color: '#E1E1E6' }}>❌</Text>
               </TouchableOpacity>
             </View>
 
@@ -334,7 +333,7 @@ export default function HomeScreen() {
                 <Text style={styles.actionBtnText}>
                   {scannedProduct.isUnregistered ? '네이버 쇼핑에서 수동 검색하기' : '온라인 최저가 보러가기'}
                 </Text>
-                <ExternalLink size={16} color="#FFF" style={{ marginLeft: 6 }} />
+                <Text style={{ fontSize: 14, color: '#FFF', marginLeft: 6 }}>🔗</Text>
               </TouchableOpacity>
             )}
           </View>
