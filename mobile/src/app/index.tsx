@@ -138,6 +138,83 @@ export default function HomeScreen() {
     }
   };
 
+  // OCR 글자 판독 성공 핸들러
+  const handleOcrSuccess = async (ocrText) => {
+    console.log("OCR Detected Text: ", ocrText);
+    setIsScannerPaused(true);
+    setIsSearching(true);
+
+    try {
+      const clientId = "3GZMhpS_2U1c6HhGMeWk";
+      const clientSecret = "rv0kU8KUOX";
+
+      // 단어가 많으면 상위 3개 단어(키워드)만 발췌하여 검색 신뢰성 확보
+      const words = ocrText.split(/\s+/).filter(w => w.length >= 2);
+      const searchKeyword = words.slice(0, 3).join(" ") || ocrText;
+
+      const response = await fetch(`https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(searchKeyword)}&display=5`, {
+        headers: {
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API 호출 실패 (코드: ${response.status})`);
+      }
+
+      const resData = await response.json();
+      const items = resData.items || [];
+
+      if (items.length > 0) {
+        const firstItem = items[0];
+        const cleanName = firstItem.title
+          ? firstItem.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+          : searchKeyword;
+
+        const lowPriceVal = parseInt(firstItem.lprice) || 0;
+        const shippingFeeVal = lowPriceVal < 30000 ? 3000 : 0;
+
+        setScannedProduct({
+          barcode: "",
+          name: cleanName,
+          image: firstItem.image || "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=400",
+          lowPrice: lowPriceVal,
+          shippingFee: shippingFeeVal,
+          mallName: firstItem.mallName || "네이버쇼핑",
+          link: firstItem.link || `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(cleanName)}`
+        });
+      } else {
+        setScannedProduct({
+          barcode: "",
+          name: `검색 실패 상품 (${searchKeyword})`,
+          image: "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=400",
+          lowPrice: 0,
+          shippingFee: 0,
+          mallName: "정보 없음",
+          link: `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(searchKeyword)}`,
+          isUnregistered: true
+        });
+      }
+    } catch (err) {
+      console.error("OCR API Search Error: ", err);
+      setScannedProduct({
+        barcode: "",
+        name: `판독 결과 조회 실패 (연동 오류)`,
+        image: "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=400",
+        lowPrice: 0,
+        shippingFee: 0,
+        mallName: "연동 오류",
+        link: "https://search.shopping.naver.com",
+        isUnregistered: true
+      });
+    } finally {
+      setIsSearching(false);
+      setIsPriceOpen(true);
+    }
+  };
+
   // 수동 검색 상품 선택 핸들러
   const handleSelectProduct = (product) => {
     setScannedProduct(product);
@@ -186,6 +263,7 @@ export default function HomeScreen() {
         <View style={styles.scannerWrapper}>
           <NativeScanner 
             onScan={handleScanSuccess} 
+            onOcrScan={handleOcrSuccess}
             isPaused={isScannerPaused} 
           />
         </View>
@@ -194,7 +272,7 @@ export default function HomeScreen() {
         {isSearching && (
           <View style={styles.searchOverlay}>
             <ActivityIndicator size="large" color="#FF4A6B" />
-            <Text style={styles.searchOverlayText}>바코드 분석 완료! 실시간 최저가 가격 비교 중...</Text>
+            <Text style={styles.searchOverlayText}>실시간 상품 판독 완료! 온라인 최저가 가격 비교 중...</Text>
           </View>
         )}
 
