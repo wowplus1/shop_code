@@ -37,55 +37,89 @@ export default function HomeScreen() {
       const clientId = "3GZMhpS_2U1c6HhGMeWk";
       const clientSecret = "rv0kU8KUOX";
       
-      // 네이버 공식 쇼핑 검색 오픈 API로 바코드 번호 직접 호출
-      const response = await fetch(`https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(barcode)}&display=5`, {
+      // --- 1단계: 봇 감지 없는 네이버 통합검색으로 바코드에서 한글 상품명 1차 추출 ---
+      const searchUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(barcode)}`;
+      const searchRes = await fetch(searchUrl, {
         headers: {
-          'X-Naver-Client-Id': clientId,
-          'X-Naver-Client-Secret': clientSecret,
-          'Accept': 'application/json'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
       });
 
-      if (!response.ok) {
-        throw new Error(`API 호출 실패 (코드: ${response.status})`);
-      }
-
-      const resData = await response.json();
-      const items = resData.items || [];
-
-      if (items.length > 0) {
-        const firstItem = items[0];
+      let foundProductName = "";
+      if (searchRes.ok) {
+        const searchHtml = await searchRes.text();
         
-        // HTML 태그 정제
-        const cleanName = firstItem.title
-          ? firstItem.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&quot;/g, '"').replace(/&amp;/g, '&')
-          : "상품명 정보 없음";
+        // "title":"상품명" 패턴 매칭 시도
+        const titleMatches = [...searchHtml.matchAll(/"title"\s*:\s*"([^"]+)"/g)];
+        for (const m of titleMatches) {
+          const t = m[1];
+          if (t && t.length > 2 && !t.includes("네이버") && !t.includes("통합검색") && !t.includes("CSS") && !t.includes("JS") && !t.includes("image")) {
+            foundProductName = t.replace(/<\/?[^>]+(>|$)/g, "").trim();
+            break;
+          }
+        }
 
-        const lowPriceVal = parseInt(firstItem.lprice) || 0;
-        const shippingFeeVal = lowPriceVal < 30000 ? 3000 : 0;
-
-        setScannedProduct({
-          barcode: barcode,
-          name: cleanName,
-          image: firstItem.image || "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=400",
-          lowPrice: lowPriceVal,
-          shippingFee: shippingFeeVal,
-          mallName: firstItem.mallName || "네이버쇼핑",
-          link: firstItem.link || `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(cleanName)}`
-        });
-      } else {
-        // 미등록 상품 폴백
-        setScannedProduct({
-          barcode: barcode,
-          name: `미등록 상품 (원산지: ${country})`,
-          image: "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=400",
-          lowPrice: 0,
-          shippingFee: 0,
-          mallName: "정보 없음",
-          link: `https://search.shopping.naver.com/search/all?query=${barcode}`,
-          isUnregistered: true
-        });
+        // alt="상품명...의 이미지" 패턴 매칭 시도 (폴백)
+        if (!foundProductName) {
+          const altMatches = [...searchHtml.matchAll(/alt="([^"]+?)(?:의 이미지)?"/g)];
+          for (const m of altMatches) {
+            const a = m[1];
+            if (a && a.length > 2 && !a.includes("네이버") && !a.includes("로고") && !a.includes("아이콘") && !a.includes("화면")) {
+              foundProductName = a.trim();
+              break;
+            }
+          }
+        }
       }
+
+      // --- 2단계: 알아낸 진짜 상품명이 있으면 쇼핑 오픈 API로 최저가 정보 조회 ---
+      if (foundProductName) {
+        const response = await fetch(`https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(foundProductName)}&display=5`, {
+          headers: {
+            'X-Naver-Client-Id': clientId,
+            'X-Naver-Client-Secret': clientSecret,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const resData = await response.json();
+          const items = resData.items || [];
+
+          if (items.length > 0) {
+            const firstItem = items[0];
+            const cleanName = firstItem.title
+              ? firstItem.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+              : foundProductName;
+
+            const lowPriceVal = parseInt(firstItem.lprice) || 0;
+            const shippingFeeVal = lowPriceVal < 30000 ? 3000 : 0;
+
+            setScannedProduct({
+              barcode: barcode,
+              name: cleanName,
+              image: firstItem.image || "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=400",
+              lowPrice: lowPriceVal,
+              shippingFee: shippingFeeVal,
+              mallName: firstItem.mallName || "네이버쇼핑",
+              link: firstItem.link || `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(cleanName)}`
+            });
+            return;
+          }
+        }
+      }
+
+      // --- 3단계: 바코드에 대응하는 상품이 네이버 통합DB에 등록되어 있지 않은 경우 ---
+      setScannedProduct({
+        barcode: barcode,
+        name: `미등록 상품 (원산지: ${country})`,
+        image: "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=400",
+        lowPrice: 0,
+        shippingFee: 0,
+        mallName: "정보 없음",
+        link: `https://search.shopping.naver.com/search/all?query=${barcode}`,
+        isUnregistered: true
+      });
     } catch (err) {
       console.error("API Fetch Error: ", err);
       setScannedProduct({
