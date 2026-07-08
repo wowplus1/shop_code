@@ -27,66 +27,41 @@ export default function SearchModal({ isOpen, onClose, onSelectProduct }) {
     setResults([]);
 
     try {
-      // 실시간 네이버 쇼핑 HTML 스크래핑 검색 기동 (CORS 우회 allorigins 사용)
-      const targetUrl = `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(query.trim())}`;
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+      const clientId = "3GZMhpS_2U1c6HhGMeWk";
+      const clientSecret = "rv0kU8KUOX";
       
-      const response = await fetch(proxyUrl);
+      const response = await fetch(`https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query.trim())}&display=5`, {
+        headers: {
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
+          'Accept': 'application/json'
+        }
+      });
+
       if (!response.ok) {
         throw new Error('Search failed');
       }
 
-      const html = await response.text();
-      let parsedResults = [];
+      const resData = await response.json();
+      const items = resData.items || [];
 
-      // 1순위 파싱: NEXT_DATA JSON
-      const jsonMatch = html.match(new RegExp('<script id="__NEXT_DATA__" type="application/json">([\\s\\S]*?)</script>'));
-      if (jsonMatch) {
-        try {
-          const data = JSON.parse(jsonMatch[1]);
-          const productsList = data.props?.pageProps?.initialState?.products?.list || [];
-          parsedResults = productsList.slice(0, 5).map(prod => {
-            const item = prod.item;
-            return {
-              barcode: '',
-              name: (item.productName || item.productTitle || "").replace(/<[^>]*>?/g, ''),
-              image: item.imageUrl,
-              lowPrice: parseInt(item.lowPrice) || 0,
-              shippingFee: parseInt(item.deliveryFee) || 0,
-              mallName: item.mallName || "네이버쇼핑",
-              link: item.adcrUrl || `https://search.shopping.naver.com/catalog/${item.id}`
-            };
-          });
-        } catch (e) {
-          console.error("Search modal JSON parsing error:", e);
-        }
-      }
+      const parsedResults = items.map(item => {
+        const cleanName = item.title
+          ? item.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+          : "상품명 정보 없음";
 
-      // 2순위 파싱: window.__PRELOADED_STATE__
-      if (parsedResults.length === 0) {
-        const preloadedMatch = html.match(new RegExp('window\\.__PRELOADED_STATE__\\s*=\\s*(\\{[\\s\\S]*?\\});\\s*</script>'));
-        if (preloadedMatch) {
-          try {
-            const data = JSON.parse(preloadedMatch[1]);
-            const list = data.catalog?.products?.list || data.search?.products?.list || [];
-            parsedResults = list.slice(0, 5).map(item => ({
-              barcode: '',
-              name: (item.productName || item.productTitle || "").replace(/<[^>]*>?/g, ''),
-              image: item.imageUrl || item.thumbnail || "",
-              lowPrice: parseInt(item.lowPrice) || 0,
-              shippingFee: parseInt(item.deliveryFee) || 0,
-              mallName: item.mallName || "네이버쇼핑",
-              link: `https://search.shopping.naver.com/catalog/${item.id}`
-            }));
-          } catch (e) {
-            console.error("Search modal preloaded parsing error:", e);
-          }
-        }
-      }
+        const lowPriceVal = parseInt(item.lprice) || 0;
+        const shippingFeeVal = lowPriceVal < 30000 ? 3000 : 0;
 
-      // 배송비 보완 매칭
-      parsedResults.forEach(item => {
-        item.shippingFee = item.lowPrice < 30000 && item.shippingFee === 0 ? 3000 : item.shippingFee;
+        return {
+          barcode: '',
+          name: cleanName,
+          image: item.image || "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=400",
+          lowPrice: lowPriceVal,
+          shippingFee: shippingFeeVal,
+          mallName: item.mallName || "네이버쇼핑",
+          link: item.link || `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(cleanName)}`
+        };
       });
 
       setResults(parsedResults);
